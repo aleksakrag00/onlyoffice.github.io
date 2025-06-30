@@ -449,9 +449,9 @@ function initializeDatePicker() {
     showLoadingScreen("Inserting date...");
     const formattedDate = calendar.formatDate(selectedDate, formatSelect.value);
 
-    if (window.pluginAPI) {
+    if (window.plugin) {
       try {
-        window.pluginAPI.callCommand(function () {
+        window.plugin.callCommand(function () {
           const oWorksheet = Api.GetActiveSheet();
           const target =
             oWorksheet.GetSelection() || oWorksheet.GetActiveCell();
