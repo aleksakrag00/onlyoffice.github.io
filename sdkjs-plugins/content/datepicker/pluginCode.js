@@ -1,25 +1,134 @@
-// Custom Calendar Class
-class CustomCalendar {
-  constructor(input, options = {}) {
-    this.input = input;
-    this.calendar = document.getElementById("customCalendar");
-    this.calendarDays = document.getElementById("calendarDays");
-    this.calendarTitle = document.getElementById("monthYearTitle");
-    this.prevBtn = document.getElementById("prevBtn");
-    this.nextBtn = document.getElementById("nextBtn");
-    this.calendarIcon = document.getElementById("calendarIcon");
-    this.monthView = document.getElementById("monthView");
-    this.yearView = document.getElementById("yearView");
-    this.weekdays = document.getElementById("calendarWeekdays");
+// Initialize plugin object structure
+window.Asc = window.Asc || {};
+window.Asc.plugin = window.Asc.plugin || {};
 
-    this.currentDate = new Date();
-    this.selectedDate = new Date();
-    this.viewYear = this.currentDate.getFullYear();
-    this.viewMonth = this.currentDate.getMonth();
-    this.isOpen = false;
-    this.currentView = "days";
+// Loading screen functions
+function showLoadingScreen(message = "Loading...") {
+  const loadingScreen = document.getElementById("loadingScreen");
+  const loadingText = document.querySelector(".loading-text");
+  const mainForm = document.getElementById("mainForm");
 
-    this.months = [
+  if (loadingScreen && loadingText && mainForm) {
+    loadingText.textContent = message;
+    loadingScreen.style.display = "flex";
+    mainForm.style.opacity = "0.3";
+    mainForm.style.pointerEvents = "none";
+    console.log("Loading screen shown:", message);
+  }
+}
+
+function hideLoadingScreen() {
+  const loadingScreen = document.getElementById("loadingScreen");
+  const mainForm = document.getElementById("mainForm");
+
+  if (loadingScreen && mainForm) {
+    loadingScreen.style.display = "none";
+    mainForm.style.opacity = "1";
+    mainForm.style.pointerEvents = "auto";
+    console.log("Loading screen hidden");
+  }
+}
+
+// Plugin initialization function called by ONLYOFFICE
+window.Asc.plugin.init = function () {
+  console.log("Plugin init called by ONLYOFFICE");
+
+  // Show loading screen during initialization
+  showLoadingScreen("Initializing plugin...");
+
+  // Store reference to plugin API
+  if (this.executeMethod) {
+    window.pluginAPI = this;
+    console.log("Plugin API stored successfully");
+  }
+
+  setTimeout(() => {
+    initializeDatePicker();
+    // Hide loading screen after initialization
+    hideLoadingScreen();
+  }, 500);
+};
+
+// Plugin event handlers
+window.Asc.plugin.onMethodReturn = function (returnValue) {
+  console.log("Method returned:", returnValue);
+};
+
+// Handle button clicks (including close button)
+window.Asc.plugin.button = function (id) {
+  console.log("Button clicked:", id);
+
+  // Handle close button or any other button
+  if (id === -1 || id === 0) {
+    // This is typically the close button
+    console.log("Plugin close requested");
+    this.executeMethod("ClosePlugin");
+  }
+};
+
+// Handle plugin resize events
+window.Asc.plugin.onResize = function (params) {
+  console.log("Plugin resized:", params);
+};
+
+// Handle plugin close event
+window.Asc.plugin.onClose = function () {
+  console.log("Plugin is closing");
+  // Clean up any resources if needed
+  return true; // Allow the plugin to close
+};
+
+// Also try direct initialization as fallback
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("DOM loaded, checking if plugin already initialized...");
+  showLoadingScreen("Loading date picker...");
+
+  setTimeout(function () {
+    if (
+      !document.querySelector("#dateInput").hasAttribute("data-initialized")
+    ) {
+      console.log("Plugin not initialized yet, running fallback...");
+      initializeDatePicker();
+    }
+    hideLoadingScreen();
+  }, 1000);
+});
+
+function initializeDatePicker() {
+  console.log("Initializing date picker...");
+
+  const input = document.getElementById("dateInput");
+  const icon = document.getElementById("calendarIcon");
+  const formatSelect = document.getElementById("dateFormat");
+  const insertBtn = document.getElementById("insertDate");
+
+  if (!input || !icon || !formatSelect || !insertBtn) {
+    console.error("DOM elements not found");
+    return;
+  }
+
+  // Mark as initialized to prevent double initialization
+  input.setAttribute("data-initialized", "true");
+
+  // Format function supporting 7 custom formats
+  function formatDate(date, format) {
+    const day = date.getDate();
+    const dayPadded = String(day).padStart(2, "0");
+    const month = date.getMonth() + 1;
+    const monthPadded = String(month).padStart(2, "0");
+    const year = date.getFullYear();
+    const yearShort = String(year).slice(-2);
+    const weekdays = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const weekday = weekdays[date.getDay()];
+    const monthsFull = [
       "January",
       "February",
       "March",
@@ -33,279 +142,7 @@ class CustomCalendar {
       "November",
       "December",
     ];
-
-    this.init();
-  }
-
-  init() {
-    this.render();
-    this.bindEvents();
-    this.updateInput();
-    this.setupIcon();
-  }
-
-  async setupIcon() {
-    // Test if the background image loads
-    await testBackgroundImage(this.calendarIcon, "resources/img/icon.png");
-  }
-
-  bindEvents() {
-    this.input.addEventListener("click", () => this.toggle());
-    this.calendarIcon.addEventListener("click", () => this.toggle());
-
-    this.prevBtn.addEventListener("click", () => this.handleNavPrev());
-    this.nextBtn.addEventListener("click", () => this.handleNavNext());
-
-    this.calendarTitle.addEventListener("click", () => this.handleTitleClick());
-
-    document.querySelectorAll(".calendar-month").forEach((monthEl) => {
-      monthEl.addEventListener("click", () => {
-        this.viewMonth = parseInt(monthEl.dataset.month);
-        this.showDayView();
-      });
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!this.input.parentNode.contains(e.target)) {
-        this.hide();
-      }
-    });
-
-    this.calendar.addEventListener("click", (e) => {
-      e.stopPropagation();
-    });
-  }
-
-  handleNavPrev() {
-    if (this.currentView === "days") {
-      this.previousMonth();
-    } else if (this.currentView === "months") {
-      this.viewYear--;
-      this.updateTitle();
-    } else if (this.currentView === "years") {
-      this.viewYear -= 12;
-      this.showYearView();
-    }
-  }
-
-  handleNavNext() {
-    if (this.currentView === "days") {
-      this.nextMonth();
-    } else if (this.currentView === "months") {
-      this.viewYear++;
-      this.updateTitle();
-    } else if (this.currentView === "years") {
-      this.viewYear += 12;
-      this.showYearView();
-    }
-  }
-
-  handleTitleClick() {
-    if (this.currentView === "days") {
-      this.showMonthView();
-    } else if (this.currentView === "months") {
-      this.showYearView();
-    } else {
-      this.showDayView();
-    }
-  }
-
-  toggle() {
-    this.isOpen ? this.hide() : this.show();
-  }
-
-  show() {
-    this.calendar.classList.add("show");
-    this.calendarIcon.classList.add("active");
-    this.isOpen = true;
-  }
-
-  hide() {
-    this.calendar.classList.remove("show");
-    this.calendarIcon.classList.remove("active");
-    this.isOpen = false;
-    this.showDayView();
-  }
-
-  showMonthView() {
-    this.currentView = "months";
-    this.monthView.style.display = "grid";
-    this.yearView.style.display = "none";
-    this.calendarDays.style.display = "none";
-    this.weekdays.style.display = "none";
-
-    // Highlight current month
-    document.querySelectorAll(".calendar-month").forEach((el) => {
-      el.classList.remove("active");
-      if (parseInt(el.dataset.month) === this.viewMonth) {
-        el.classList.add("active");
-      }
-    });
-
-    this.updateTitle();
-  }
-
-  showYearView() {
-    this.currentView = "years";
-    this.monthView.style.display = "none";
-    this.yearView.style.display = "grid";
-    this.calendarDays.style.display = "none";
-    this.weekdays.style.display = "none";
-
-    this.generateYears();
-    this.updateTitle();
-  }
-
-  showDayView() {
-    this.currentView = "days";
-    this.monthView.style.display = "none";
-    this.yearView.style.display = "none";
-    this.calendarDays.style.display = "grid";
-    this.weekdays.style.display = "grid";
-
-    this.render();
-  }
-
-  generateYears() {
-    this.yearView.innerHTML = "";
-    const currentYear = this.viewYear;
-    const startYear = currentYear - 6;
-
-    for (let year = startYear; year < startYear + 12; year++) {
-      const yearEl = document.createElement("div");
-      yearEl.className = "calendar-year";
-      yearEl.textContent = year;
-      yearEl.dataset.year = year;
-      if (year === currentYear) yearEl.classList.add("active");
-
-      yearEl.addEventListener("click", () => {
-        this.viewYear = year;
-        this.showMonthView();
-      });
-      this.yearView.appendChild(yearEl);
-    }
-  }
-
-  previousMonth() {
-    this.viewMonth--;
-    if (this.viewMonth < 0) {
-      this.viewMonth = 11;
-      this.viewYear--;
-    }
-    this.render();
-  }
-
-  nextMonth() {
-    this.viewMonth++;
-    if (this.viewMonth > 11) {
-      this.viewMonth = 0;
-      this.viewYear++;
-    }
-    this.render();
-  }
-
-  render() {
-    this.updateTitle();
-    this.calendarDays.innerHTML = "";
-
-    const firstDay = new Date(this.viewYear, this.viewMonth, 1);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay());
-
-    for (let i = 0; i < 42; i++) {
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + i);
-
-      const dayEl = document.createElement("div");
-      dayEl.classList.add("calendar-day");
-      dayEl.textContent = date.getDate();
-
-      if (date.getMonth() !== this.viewMonth) {
-        dayEl.classList.add("other-month");
-      }
-
-      if (this.isSameDay(date, this.currentDate)) {
-        dayEl.classList.add("today");
-      }
-
-      if (this.isSameDay(date, this.selectedDate)) {
-        dayEl.classList.add("selected");
-      }
-
-      dayEl.addEventListener("click", () => {
-        this.selectDate(date);
-      });
-
-      this.calendarDays.appendChild(dayEl);
-    }
-  }
-
-  updateTitle() {
-    if (this.currentView === "days") {
-      this.calendarTitle.textContent = `${this.months[this.viewMonth]} ${
-        this.viewYear
-      }`;
-    } else if (this.currentView === "months") {
-      this.calendarTitle.textContent = this.viewYear;
-    } else {
-      const startYear = this.viewYear - 6;
-      this.calendarTitle.textContent = `${startYear}-${startYear + 11}`;
-    }
-  }
-
-  selectDate(date) {
-    this.selectedDate = new Date(date);
-    this.updateInput();
-    this.render();
-    this.hide();
-    this.input.dispatchEvent(new Event("datechange"));
-  }
-
-  updateInput() {
-    const formatSelect = document.getElementById("dateFormat");
-    this.input.value = this.formatDate(this.selectedDate, formatSelect.value);
-  }
-
-  getDate() {
-    return this.selectedDate;
-  }
-
-  setDate(date) {
-    this.selectedDate = new Date(date);
-    this.viewYear = date.getFullYear();
-    this.viewMonth = date.getMonth();
-    this.updateInput();
-    this.render();
-  }
-
-  isSameDay(date1, date2) {
-    return (
-      date1.getDate() === date2.getDate() &&
-      date1.getMonth() === date2.getMonth() &&
-      date1.getFullYear() === date2.getFullYear()
-    );
-  }
-
-  formatDate(date, format) {
-    const day = date.getDate();
-    const dayPadded = String(day).padStart(2, "0");
-    const month = date.getMonth() + 1;
-    const monthPadded = String(month).padStart(2, "0");
-    const year = date.getFullYear();
-    const yearShort = String(year).slice(-2);
-
-    const weekdays = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-    const weekday = weekdays[date.getDay()];
-
-    const monthFull = this.months[month - 1];
+    const monthFull = monthsFull[month - 1];
     const monthShort = monthFull.slice(0, 3);
 
     switch (format) {
@@ -324,168 +161,303 @@ class CustomCalendar {
       case "M.D.YYYY":
         return `${month}.${day}.${year}`;
       default:
-        return `${month}/${day}/${year}`;
+        return "";
     }
   }
-}
 
-// Background image detection utility
-function testBackgroundImage(element, url) {
-  return new Promise((resolve) => {
-    const testImg = new Image();
-    testImg.onload = () => {
-      element.classList.add("has-bg-image");
-      resolve(true);
-    };
-    testImg.onerror = () => {
-      element.classList.remove("has-bg-image");
-      resolve(false);
-    };
-    testImg.src = url;
+  // Initialize the datepicker with today's date
+  const today = new Date();
+  input.value = formatDate(today, formatSelect.value);
+  const dp = new Datepicker(input, {
+    autohide: false,
+    defaultViewDate: today,
+    todayHighlight: true,
+    maxView: 2,
   });
-}
 
-// Initialize plugin
-window.Asc = window.Asc || {};
-window.Asc.plugin = window.Asc.plugin || {};
-window.Asc.scope = window.Asc.scope || {};
-
-window.Asc.plugin.init = function () {
-  if (this.executeMethod) window.pluginAPI = this;
-  detectTheme();
-  showLoadingScreen("Initializing plugin...");
-  setTimeout(() => {
-    initializeDatePicker();
-    hideLoadingScreen();
-  }, 500);
-};
-
-function detectTheme() {
-  const body = document.body;
-  const themeClasses = [
-    "theme-type-light",
-    "theme-type-classic-light",
-    "theme-type-dark",
-    "theme-type-contrast-dark",
-  ];
-
-  for (let themeClass of themeClasses) {
-    if (body.classList.contains(themeClass)) {
-      return themeClass;
-    }
-  }
-
-  if (
-    window.matchMedia &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-  ) {
-    body.classList.add("theme-type-dark");
-    return "theme-type-dark";
-  }
-
-  body.classList.add("theme-type-light");
-  return "theme-type-light";
-}
-
-function showLoadingScreen(message = "Loading...") {
-  const loadingOverlay = document.getElementById("loadingOverlay");
-  const loadingText = document.getElementById("loadingText");
-  if (loadingOverlay && loadingText) {
-    loadingText.textContent = message;
-    loadingOverlay.style.display = "flex";
-    document.getElementById("mainContent").classList.add("loading");
-  }
-}
-
-function hideLoadingScreen() {
-  const loadingOverlay = document.getElementById("loadingOverlay");
-  if (loadingOverlay) {
-    loadingOverlay.style.display = "none";
-    document.getElementById("mainContent").classList.remove("loading");
-  }
-}
-
-function initializeDatePicker() {
-  const input = document.getElementById("dateInput");
-  const formatSelect = document.getElementById("dateFormat");
-  const insertBtn = document.getElementById("insertDate");
-
-  if (!input || !formatSelect || !insertBtn) return;
-
-  input.setAttribute("data-initialized", "true");
-  const calendar = new CustomCalendar(input);
-
+  // Function to update format options with current date
   function updateFormatOptions(selectedDate) {
     const formats = [
-      "M/D/YYYY",
-      "dddd, MMMM D, YYYY",
-      "MMMM D, YYYY",
-      "M/D/YY",
-      "YYYY-MM-DD",
-      "D-MMM-YY",
-      "M.D.YYYY",
+      { value: "M/D/YYYY", label: "M/D/YYYY" },
+      { value: "dddd, MMMM D, YYYY", label: "dddd, MMMM D, YYYY" },
+      { value: "MMMM D, YYYY", label: "MMMM D, YYYY" },
+      { value: "M/D/YY", label: "M/D/YY" },
+      { value: "YYYY-MM-DD", label: "YYYY-MM-DD" },
+      { value: "D-MMM-YY", label: "D-MMM-YY" },
+      { value: "M.D.YYYY", label: "M.D.YYYY" },
     ];
+
     const currentValue = formatSelect.value;
     formatSelect.innerHTML = "";
+
     formats.forEach((format) => {
       const option = document.createElement("option");
-      option.value = format;
-      option.textContent = calendar.formatDate(selectedDate, format);
+      option.value = format.value;
+      option.textContent = formatDate(selectedDate, format.value);
       formatSelect.appendChild(option);
     });
+
+    // Restore the previously selected format
     formatSelect.value = currentValue;
   }
 
-  updateFormatOptions(new Date());
-  formatSelect.addEventListener("change", () => calendar.updateInput());
-  input.addEventListener("datechange", () =>
-    updateFormatOptions(calendar.getDate())
-  );
+  // Function to reset to defaults
+  function resetToDefaults() {
+    const today = new Date();
+    dp.setDate(today);
+    input.value = formatDate(today, "M/D/YYYY");
+    formatSelect.selectedIndex = 0; // Reset to first format
+    updateFormatOptions(today);
+  }
 
+  // Initialize format options with today's date
+  updateFormatOptions(today);
+
+  // When calendar is opened, apply grey style
+  input.addEventListener("show", () => {
+    icon.classList.add("active");
+  });
+
+  // When calendar is closed, remove grey style
+  input.addEventListener("hide", () => {
+    icon.classList.remove("active");
+  });
+
+  // Allow clicking the icon to open calendar
+  icon.addEventListener("click", () => {
+    input.focus();
+  });
+
+  // Update date format when format selection changes
+  formatSelect.addEventListener("change", () => {
+    const selectedDate = dp.getDate();
+    if (selectedDate) {
+      input.value = formatDate(selectedDate, formatSelect.value);
+    }
+  });
+
+  // Update displayed date and format options when date is selected
+  input.addEventListener("changeDate", () => {
+    const selectedDate = dp.getDate();
+    if (selectedDate) {
+      input.value = formatDate(selectedDate, formatSelect.value);
+      updateFormatOptions(selectedDate);
+    }
+  });
+
+  // Insert button: insert formatted date into ALL selected cells
   insertBtn.addEventListener("click", () => {
-    const selectedDate = calendar.getDate();
-    if (!selectedDate) return;
+    const selectedDate = dp.getDate();
+    const format = formatSelect.value;
+    if (!selectedDate) {
+      console.log("No date selected.");
+      return;
+    }
 
+    // Show loading screen during insertion
     showLoadingScreen("Inserting date...");
-    const formattedDate = calendar.formatDate(selectedDate, formatSelect.value);
 
+    const formattedDate = formatDate(selectedDate, format);
+    console.log("Formatted date:", formattedDate);
+
+    // Check if we have the plugin API
     if (window.pluginAPI) {
+      console.log("Using plugin API to insert date into all selected cells...");
+
+      // Method 1: Use Asc.scope to pass data to callCommand (recommended approach)
+      if (window.Asc && window.Asc.scope) {
+        window.Asc.scope.dateValue = formattedDate;
+        console.log("Set Asc.scope.dateValue:", formattedDate);
+
+        try {
+          window.pluginAPI.callCommand(function () {
+            var oWorksheet = Api.GetActiveSheet();
+            var oSelection = oWorksheet.GetSelection();
+
+            // Check if we have a valid selection
+            if (oSelection) {
+              console.log("Setting formatted text for selected range");
+              // Force the value to be treated as text, not as a date
+              // Method 1: Try SetText if available
+              if (typeof oSelection.SetText === "function") {
+                oSelection.SetText(Asc.scope.dateValue);
+              } else {
+                // Method 2: Prefix with apostrophe to force text format
+                oSelection.SetValue("'" + Asc.scope.dateValue);
+              }
+            } else {
+              console.log("No selection found, falling back to active cell");
+              // Fallback to active cell if no selection
+              var oRange = oWorksheet.GetActiveCell();
+              if (oRange) {
+                if (typeof oRange.SetText === "function") {
+                  oRange.SetText(Asc.scope.dateValue);
+                } else {
+                  oRange.SetValue("'" + Asc.scope.dateValue);
+                }
+              }
+            }
+          });
+          console.log("callCommand with formatted text support executed");
+
+          // Reset to defaults after successful insertion
+          setTimeout(() => {
+            resetToDefaults();
+            hideLoadingScreen();
+            console.log("Reset to defaults after insertion");
+          }, 300);
+
+          return;
+        } catch (e) {
+          console.log("callCommand with Asc.scope failed:", e);
+        }
+      }
+
+      // Method 2: Alternative approach with explicit text formatting
       try {
         window.pluginAPI.callCommand(function () {
-          const oWorksheet = Api.GetActiveSheet();
-          const target =
-            oWorksheet.GetSelection() || oWorksheet.GetActiveCell();
-          if (target) {
+          var oWorksheet = Api.GetActiveSheet();
+          var oSelection = oWorksheet.GetSelection();
+
+          if (oSelection) {
             try {
-              target.SetNumberFormat("@");
-              target.SetValue(formattedDate);
-            } catch (e) {
-              target.SetValue("'" + formattedDate);
+              // Try multiple approaches to force text format
+              console.log("Trying to set as formatted text");
+
+              // Approach 1: Use SetNumberFormat to set as text, then SetValue
+              try {
+                oSelection.SetNumberFormat("@"); // @ symbol forces text format
+                oSelection.SetValue(Asc.scope.dateValue || formattedDate);
+              } catch (formatError) {
+                console.log("NumberFormat approach failed:", formatError);
+                // Approach 2: Force as text with apostrophe prefix
+                oSelection.SetValue(
+                  "'" + (Asc.scope.dateValue || formattedDate)
+                );
+              }
+            } catch (rangeError) {
+              console.log(
+                "Range formatting failed, trying active cell:",
+                rangeError
+              );
+
+              var oActiveCell = oWorksheet.GetActiveCell();
+              if (oActiveCell) {
+                try {
+                  oActiveCell.SetNumberFormat("@");
+                  oActiveCell.SetValue(Asc.scope.dateValue || formattedDate);
+                } catch (cellError) {
+                  oActiveCell.SetValue(
+                    "'" + (Asc.scope.dateValue || formattedDate)
+                  );
+                }
+              }
+            }
+          } else {
+            // Fallback to active cell
+            var oActiveCell = oWorksheet.GetActiveCell();
+            if (oActiveCell) {
+              try {
+                oActiveCell.SetNumberFormat("@");
+                oActiveCell.SetValue(Asc.scope.dateValue || formattedDate);
+              } catch (cellError) {
+                oActiveCell.SetValue(
+                  "'" + (Asc.scope.dateValue || formattedDate)
+                );
+              }
             }
           }
         });
-      } catch (e) {
-        console.log("callCommand failed:", e);
-      }
-    }
+        console.log("Alternative text formatting approach executed");
 
-    setTimeout(() => {
-      calendar.setDate(new Date());
-      formatSelect.selectedIndex = 0;
+        // Reset to defaults after successful insertion
+        setTimeout(() => {
+          resetToDefaults();
+          hideLoadingScreen();
+          console.log("Reset to defaults after insertion");
+        }, 300);
+
+        return;
+      } catch (e) {
+        console.log("Alternative text formatting approach failed:", e);
+        hideLoadingScreen();
+      }
+
+      // Method 3: Try executeMethod approaches (keeping original fallbacks)
+      var methods = [
+        ["PastePlainText", [formattedDate]],
+        ["SetValue", [formattedDate]],
+        ["InsertText", [formattedDate]],
+        ["PasteText", [formattedDate]],
+      ];
+
+      for (let i = 0; i < methods.length; i++) {
+        try {
+          console.log(`Trying executeMethod: ${methods[i][0]}`);
+          window.pluginAPI.executeMethod(methods[i][0], methods[i][1]);
+          console.log(`executeMethod ${methods[i][0]} executed successfully`);
+
+          // Reset to defaults after successful insertion
+          setTimeout(() => {
+            resetToDefaults();
+            hideLoadingScreen();
+            console.log("Reset to defaults after insertion");
+          }, 300);
+
+          return;
+        } catch (e) {
+          console.log(`executeMethod ${methods[i][0]} failed:`, e);
+        }
+      }
+
+      // Method 4: Try Document Builder API for online editors
+      if (window.pluginAPI.callCommand) {
+        try {
+          console.log("Trying Document Builder API approach...");
+          window.pluginAPI.callCommand(function () {
+            var oDocument = Api.GetDocument();
+            var oParagraph = Api.CreateParagraph();
+            var oRun = Api.CreateRun();
+            oRun.AddText(Asc.scope.dateValue || "Date insertion failed");
+            oParagraph.AddElement(oRun);
+            oDocument.InsertContent([oParagraph]);
+          });
+          console.log("Document Builder API executed");
+          return;
+        } catch (e) {
+          console.log("Document Builder API failed:", e);
+        }
+      }
+
+      // Method 5: Direct cell manipulation attempt
+      try {
+        console.log("Trying direct cell manipulation...");
+        window.pluginAPI.executeCommand("cell", {
+          command: "setText",
+          data: formattedDate,
+        });
+        console.log("Direct cell manipulation executed");
+        return;
+      } catch (e) {
+        console.log("Direct cell manipulation failed:", e);
+      }
+
+      // If all methods fail, show alert
       hideLoadingScreen();
-    }, 300);
+      alert(
+        "Unable to insert date automatically. Formatted date: " +
+          formattedDate +
+          "\n\nPlease copy this date and paste it manually into your selected cells."
+      );
+    } else {
+      console.error("Plugin API not available");
+      hideLoadingScreen();
+      alert("Plugin API not available. Formatted date: " + formattedDate);
+    }
   });
+
+  console.log("Date picker initialized successfully");
 }
 
-// Fallback initialization
-document.addEventListener("DOMContentLoaded", function () {
-  showLoadingScreen("Loading date picker...");
-  setTimeout(() => {
-    if (
-      !document.querySelector("#dateInput").hasAttribute("data-initialized")
-    ) {
-      initializeDatePicker();
-    }
-    hideLoadingScreen();
-  }, 800);
-});
+// Additional debug information
+console.log("Plugin script loaded");
