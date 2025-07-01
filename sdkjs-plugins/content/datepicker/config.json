@@ -25,7 +25,7 @@
     {
       "description": "Main",
       "url": "index.html",
-      "icons": ["resources/img/icon.png", "resources/img/icon.png"],
+      "icons": ["resources/img/icon.png", "resources/img/icon@2x.png"],
       "isViewer": false,
       "EditorsSupport": ["cell"],
       "isVisual": true,

@@ -45,7 +45,6 @@ class CustomCalendar {
   }
 
   async setupIcon() {
-    // Test if the background image loads
     await testBackgroundImage(this.calendarIcon, "resources/img/icon.png");
   }
 
@@ -134,7 +133,6 @@ class CustomCalendar {
     this.calendarDays.style.display = "none";
     this.weekdays.style.display = "none";
 
-    // Highlight current month
     document.querySelectorAll(".calendar-month").forEach((el) => {
       el.classList.remove("active");
       if (parseInt(el.dataset.month) === this.viewMonth) {
@@ -405,6 +403,47 @@ function hideLoadingScreen() {
   }
 }
 
+// Simplified date insertion function - use the working template literal approach
+function insertDateValue(formattedDate, selectedDate) {
+  if (!window.pluginAPI) {
+    console.error("Plugin API not available");
+    return false;
+  }
+
+  console.log("Attempting to insert date:", formattedDate);
+
+  try {
+    // Build the function as a string with the value directly embedded
+    const functionCode = `
+      function() {
+        try {
+          var oWorksheet = Api.GetActiveSheet();
+          if (oWorksheet) {
+            var oSelection = oWorksheet.GetSelection();
+            if (oSelection) {
+              oSelection.SetValue("${formattedDate}");
+              return true;
+            }
+          }
+          return false;
+        } catch (e) {
+          console.log("Insert error:", e);
+          return false;
+        }
+      }
+    `;
+
+    // Convert string to function and execute
+    const embeddedFunction = eval(`(${functionCode})`);
+    window.pluginAPI.callCommand(embeddedFunction);
+    console.log("Date insertion completed");
+    return true;
+  } catch (e) {
+    console.log("Insert error:", e);
+    return false;
+  }
+}
+
 function initializeDatePicker() {
   const input = document.getElementById("dateInput");
   const formatSelect = document.getElementById("dateFormat");
@@ -444,36 +483,50 @@ function initializeDatePicker() {
 
   insertBtn.addEventListener("click", () => {
     const selectedDate = calendar.getDate();
-    if (!selectedDate) return;
-
-    showLoadingScreen("Inserting date...");
-    const formattedDate = calendar.formatDate(selectedDate, formatSelect.value);
-
-    if (window.plugin) {
-      try {
-        window.plugin.callCommand(function () {
-          const oWorksheet = Api.GetActiveSheet();
-          const target =
-            oWorksheet.GetSelection() || oWorksheet.GetActiveCell();
-          if (target) {
-            try {
-              target.SetNumberFormat("@");
-              target.SetValue(formattedDate);
-            } catch (e) {
-              target.SetValue("'" + formattedDate);
-            }
-          }
-        });
-      } catch (e) {
-        console.log("callCommand failed:", e);
-      }
+    if (!selectedDate) {
+      console.log("No date selected");
+      return;
     }
 
+    // Apply loading state IMMEDIATELY before any async operations
+    const mainContent = document.getElementById("mainContent");
+    if (mainContent) {
+      mainContent.classList.add("loading");
+    }
+    showLoadingScreen("Inserting date...");
+
+    const formattedDate = calendar.formatDate(selectedDate, formatSelect.value);
+
+    console.log("Attempting to insert:", formattedDate);
+
+    // Use setTimeout to ensure UI updates immediately
     setTimeout(() => {
-      calendar.setDate(new Date());
-      formatSelect.selectedIndex = 0;
-      hideLoadingScreen();
-    }, 300);
+      // Try to insert the date
+      const success = insertDateValue(formattedDate, selectedDate);
+
+      setTimeout(() => {
+        if (success) {
+          console.log("Date inserted successfully");
+          // Reset both the calendar and format dropdown
+          const todaysDate = new Date();
+
+          // Reset format dropdown to first option FIRST
+          formatSelect.selectedIndex = 0;
+
+          // Update format options to show today's date in all formats
+          updateFormatOptions(todaysDate);
+
+          // Set calendar date AFTER format is reset (this will trigger updateInput)
+          calendar.setDate(todaysDate);
+        } else {
+          console.error("Failed to insert date");
+        }
+        hideLoadingScreen();
+        if (mainContent) {
+          mainContent.classList.remove("loading");
+        }
+      }, 300);
+    }, 10); // Very short delay to ensure UI updates
   });
 }
 

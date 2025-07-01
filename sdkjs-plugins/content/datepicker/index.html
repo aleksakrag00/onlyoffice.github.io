@@ -8,72 +8,7 @@
       href="https://onlyoffice.github.io/sdkjs-plugins/v1/plugins.css"
     />
     <style>
-      /* Base theme variables (Light) */
-      :root {
-        --calendar-bg: #ffffff;
-        --calendar-header-bg: #f8f9fa;
-        --calendar-border: #dee2e6;
-        --calendar-text: #212529;
-        --calendar-day-hover: #e9ecef;
-        --calendar-nav-btn-hover: #e9ecef;
-        --calendar-weekday: #6c757d;
-        --calendar-other-month: #adb5bd;
-        --calendar-today-border: #0d6efd;
-        --calendar-today-bg: rgba(13, 110, 253, 0.1);
-        --calendar-selected-bg: #0d6efd;
-        --calendar-selected-text: #ffffff;
-      }
-
-      /* Classic Light Theme - Blue */
-      .theme-type-classic-light .custom-calendar,
-      .theme-classic-light .custom-calendar {
-        --calendar-bg: #f0f7ff;
-        --calendar-header-bg: #d4e6ff;
-        --calendar-border: #b8d4ff;
-        --calendar-text: #003366;
-        --calendar-day-hover: #d4e6ff;
-        --calendar-nav-btn-hover: #c2dcff;
-        --calendar-weekday: #4d7cb3;
-        --calendar-other-month: #8ab0d9;
-        --calendar-today-border: #0066cc;
-        --calendar-today-bg: rgba(0, 102, 204, 0.1);
-        --calendar-selected-bg: #0066cc;
-      }
-
-      /* Dark Theme */
-      .theme-type-dark .custom-calendar,
-      .theme-dark .custom-calendar {
-        --calendar-bg: #2d2d2d;
-        --calendar-header-bg: #383838;
-        --calendar-border: #454545;
-        --calendar-text: #e0e0e0;
-        --calendar-day-hover: #383838;
-        --calendar-nav-btn-hover: #454545;
-        --calendar-weekday: #a0a0a0;
-        --calendar-other-month: #707070;
-        --calendar-today-border: #4d8eff;
-        --calendar-today-bg: rgba(77, 142, 255, 0.1);
-        --calendar-selected-bg: #4d8eff;
-      }
-
-      /* Contrast Dark Theme - High Contrast */
-      .theme-type-contrast-dark .custom-calendar,
-      .theme-contrast-dark .custom-calendar {
-        --calendar-bg: #1a1a1a;
-        --calendar-header-bg: #2a2a2a;
-        --calendar-border: #444;
-        --calendar-text: #ffffff;
-        --calendar-day-hover: #333333;
-        --calendar-nav-btn-hover: #444444;
-        --calendar-weekday: #bbbbbb;
-        --calendar-other-month: #888888;
-        --calendar-today-border: #ffcc00;
-        --calendar-today-bg: rgba(255, 204, 0, 0.1);
-        --calendar-selected-bg: #ffcc00;
-        --calendar-selected-text: #000000;
-      }
-
-      /* Base styles */
+      /* Base styles - let OnlyOffice themes provide colors */
       .datepicker-wrapper {
         position: relative;
       }
@@ -147,13 +82,19 @@
 
       .form-control {
         width: 100%;
-        padding: 8px 12px;
+        padding: 4px 12px;
         font-size: 12px;
         border: 1px solid rgba(0, 0, 0, 0.2);
         border-radius: 3px;
         box-sizing: border-box;
         padding-right: 36px;
         transition: border-color 0.2s, box-shadow 0.2s;
+        background: inherit;
+        color: inherit;
+      }
+
+      .form-control-second {
+        padding-left: 9px !important;
       }
 
       .form-control:focus {
@@ -192,23 +133,24 @@
         opacity: 0.8;
       }
 
-      /* Custom Calendar Styles */
+      /* Custom Calendar Styles - inherit OnlyOffice theme colors */
       .custom-calendar {
         position: absolute;
         top: 100%;
         left: 0;
         right: 0;
         z-index: 1000;
-        border: 1px solid var(--calendar-border);
+        border: 1px solid rgba(0, 0, 0, 0.2);
         border-radius: 4px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         margin-top: 2px;
         display: none;
-        background: var(--calendar-bg);
-        color: var(--calendar-text);
         width: 100%;
         box-sizing: border-box;
         overflow: hidden;
+        /* Inherit OnlyOffice theme colors */
+        background: Canvas;
+        color: CanvasText;
       }
 
       .custom-calendar.show {
@@ -220,10 +162,10 @@
         align-items: center;
         justify-content: space-between;
         padding: 12px 16px;
-        border-bottom: 1px solid var(--calendar-border);
-        background: var(--calendar-header-bg);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         height: 45px;
         box-sizing: border-box;
+        background: rgba(0, 0, 0, 0.02);
       }
 
       .calendar-title {
@@ -236,7 +178,7 @@
       }
 
       .calendar-title:hover {
-        background-color: var(--calendar-day-hover);
+        background-color: rgba(0, 0, 0, 0.05);
       }
 
       .calendar-nav-btn {
@@ -253,11 +195,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--calendar-text);
+        color: inherit;
       }
 
       .calendar-nav-btn:hover {
-        background-color: var(--calendar-nav-btn-hover);
+        background-color: rgba(0, 0, 0, 0.05);
       }
 
       .calendar-grid {
@@ -277,9 +219,9 @@
         font-size: 12px;
         font-weight: 600;
         padding: 8px 0;
-        color: var(--calendar-weekday);
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        opacity: 0.7;
       }
 
       .calendar-days {
@@ -303,23 +245,23 @@
       }
 
       .calendar-day:hover {
-        background-color: var(--calendar-day-hover);
-        border-color: var(--calendar-border);
+        background-color: rgba(0, 0, 0, 0.05);
+        border-color: rgba(0, 0, 0, 0.1);
       }
 
       .calendar-day.other-month {
-        color: var(--calendar-other-month);
+        opacity: 0.4;
       }
 
       .calendar-day.today {
         font-weight: bold;
-        border: 2px solid var(--calendar-today-border);
-        background-color: var(--calendar-today-bg);
+        border: 2px solid #0d6efd;
+        background-color: rgba(13, 110, 253, 0.1);
       }
 
       .calendar-day.selected {
-        background-color: var(--calendar-selected-bg);
-        color: var(--calendar-selected-text);
+        background-color: #0d6efd;
+        color: #ffffff;
         font-weight: 600;
       }
 
@@ -351,22 +293,22 @@
         align-items: center;
         justify-content: center;
         min-height: 40px;
-        border: 1px solid var(--calendar-border);
+        border: 1px solid rgba(0, 0, 0, 0.1);
       }
 
       .calendar-month:hover,
       .calendar-year:hover {
-        background-color: var(--calendar-day-hover);
+        background-color: rgba(0, 0, 0, 0.05);
       }
 
       .calendar-month.active,
       .calendar-year.active {
-        background-color: var(--calendar-selected-bg);
-        color: var(--calendar-selected-text);
+        background-color: #0d6efd;
+        color: #ffffff;
         font-weight: 600;
       }
 
-      /* Loading overlay */
+      /* Loading overlay - simpler approach */
       .loading-overlay {
         position: absolute;
         top: 0;
@@ -377,7 +319,8 @@
         flex-direction: column;
         z-index: 9999;
         padding: 16px;
-        background-color: Canvas;
+        justify-content: flex-start;
+        align-items: flex-start;
       }
 
       .loading-content {
@@ -417,9 +360,62 @@
         min-height: 320px;
       }
 
-      .main-content.loading .form {
-        opacity: 0.4;
-        pointer-events: none;
+      /* Hide everything else when loading - target all content */
+      .main-content.loading > *:not(.loading-overlay) {
+        display: none !important;
+      }
+
+      .main-content.loading .loading-overlay {
+        display: flex !important;
+      }
+
+      /* Dark theme adjustments */
+      .theme-type-dark .calendar-day.today,
+      .theme-dark .calendar-day.today {
+        border-color: #4d8eff;
+        background-color: rgba(77, 142, 255, 0.15);
+      }
+
+      .theme-type-dark .calendar-day.selected,
+      .theme-dark .calendar-day.selected,
+      .theme-type-dark .calendar-month.active,
+      .theme-dark .calendar-month.active,
+      .theme-type-dark .calendar-year.active,
+      .theme-dark .calendar-year.active {
+        background-color: #4d8eff;
+      }
+
+      /* Contrast dark theme */
+      .theme-type-contrast-dark .calendar-day.today,
+      .theme-contrast-dark .calendar-day.today {
+        border-color: #ffcc00;
+        background-color: rgba(255, 204, 0, 0.15);
+      }
+
+      .theme-type-contrast-dark .calendar-day.selected,
+      .theme-contrast-dark .calendar-day.selected,
+      .theme-type-contrast-dark .calendar-month.active,
+      .theme-contrast-dark .calendar-month.active,
+      .theme-type-contrast-dark .calendar-year.active,
+      .theme-contrast-dark .calendar-year.active {
+        background-color: #ffcc00;
+        color: #000000;
+      }
+
+      /* Classic light theme adjustments */
+      .theme-type-classic-light .calendar-day.today,
+      .theme-classic-light .calendar-day.today {
+        border-color: #0066cc;
+        background-color: rgba(0, 102, 204, 0.1);
+      }
+
+      .theme-type-classic-light .calendar-day.selected,
+      .theme-classic-light .calendar-day.selected,
+      .theme-type-classic-light .calendar-month.active,
+      .theme-classic-light .calendar-month.active,
+      .theme-type-classic-light .calendar-year.active,
+      .theme-classic-light .calendar-year.active {
+        background-color: #0066cc;
       }
     </style>
   </head>
@@ -507,7 +503,7 @@
 
         <div class="form-group">
           <label for="dateFormat">Select date format</label>
-          <select id="dateFormat" class="form-control">
+          <select id="dateFormat" class="form-control form-control-second">
             <option value="M/D/YYYY">5/6/2025</option>
             <option value="dddd, MMMM D, YYYY">Monday, May 26, 2025</option>
             <option value="MMMM D, YYYY">May 26, 2025</option>
