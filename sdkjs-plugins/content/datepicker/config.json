@@ -3,29 +3,35 @@
   "guid": "asc.{409e5493-56ae-45e1-8423-c73c84a06c50}",
   "version": "1.0.0",
   "description": "A plugin to insert formatted dates into cells.",
-  "author": "Aleksa Radenkovic",
-  "homepage": "https://youtube.com",
-  "help": "https://youtube.com",
   "type": "panel",
 
-  "store": {
-    "background": {
-      "light": "#F5F5F5",
-      "dark": "#444444"
-    },
-    "screenshots": ["resources/img/icon.png", "resources/img/icon.png"],
-    "icons": {
-      "light": "resources/img/icon.png",
-      "dark": "resources/img/icon.png"
-    },
-    "categories": ["productivity", "tools"]
-  },
+  "icons": ["resources/img/icon.png", "resources/img/icon-dark.png"],
 
   "variations": [
     {
-      "description": "Main",
+      "description": "Insert formatted dates into spreadsheet cells with a calendar interface.",
       "url": "index.html",
-      "icons": ["resources/img/icon.png", "resources/img/icon.png"],
+      "icons": ["resources/img/icon.png", "resources/img/icon-dark.png"],
+      "icons2": [
+        {
+          "style": "light",
+          "100%": {
+            "normal": "resources/img/icon.png"
+          },
+          "200%": {
+            "normal": "resources/img/icon.png"
+          }
+        },
+        {
+          "style": "dark",
+          "100%": {
+            "normal": "resources/img/icon-dark.png"
+          },
+          "200%": {
+            "normal": "resources/img/icon-dark.png"
+          }
+        }
+      ],
       "isViewer": false,
       "EditorsSupport": ["cell"],
       "isVisual": true,
@@ -34,7 +40,15 @@
       "initDataType": "none",
       "initData": "",
       "isUpdateOleOnResize": true,
-      "buttons": []
+      "buttons": [],
+      "store": {
+        "screenshots": [
+          "resources/img/screenshot1.png",
+          "resources/img/screenshot2.png",
+          "resources/img/screenshot3.png",
+          "resources/img/screenshot4.png"
+        ]
+      }
     }
   ]
 }

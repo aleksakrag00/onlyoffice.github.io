@@ -49,12 +49,30 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-image: url("resources/img/icon.png");
+        background-image: url("resources/img/icon-light.png");
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center;
         opacity: 0;
         transition: opacity 0.2s;
+      }
+
+      /* Theme-aware icon coloring with !important */
+      .datepicker-icon.dark-theme::before {
+        filter: brightness(0) invert(1) !important;
+      }
+
+      .datepicker-icon.light-theme::before {
+        filter: none !important;
+      }
+
+      /* Alternative selector in case the above doesn't work */
+      .dark-theme.datepicker-icon::before {
+        filter: brightness(0) invert(1) !important;
+      }
+
+      .light-theme.datepicker-icon::before {
+        filter: none !important;
       }
 
       .datepicker-icon.has-bg-image::before {
@@ -130,10 +148,9 @@
         margin-bottom: 20px;
         text-align: justify;
         line-height: 1.4;
-        opacity: 0.8;
       }
 
-      /* Custom Calendar Styles - inherit OnlyOffice theme colors */
+      /* Custom Calendar Styles - simple light/dark detection */
       .custom-calendar {
         position: absolute;
         top: 100%;
@@ -148,9 +165,7 @@
         width: 100%;
         box-sizing: border-box;
         overflow: hidden;
-        /* Inherit OnlyOffice theme colors */
-        background: Canvas;
-        color: CanvasText;
+        /* Will be set by JavaScript */
       }
 
       .custom-calendar.show {
@@ -232,13 +247,13 @@
 
       .calendar-day {
         text-align: center;
-        padding: 8px 0;
+        padding: 0;
         font-size: 13px;
         cursor: pointer;
         border-radius: 4px;
         transition: all 0.2s;
         border: 1px solid transparent;
-        min-height: 32px;
+        min-height: 28px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -251,6 +266,12 @@
 
       .calendar-day.other-month {
         opacity: 0.4;
+      }
+
+      /* Make Sunday (first column) and Saturday (last column) days red - keep red in all themes */
+      .calendar-day:nth-child(7n + 1),
+      .calendar-day:nth-child(7n) {
+        color: #dc3545 !important;
       }
 
       .calendar-day.today {
@@ -283,7 +304,7 @@
 
       .calendar-month,
       .calendar-year {
-        padding: 12px 8px;
+        padding: 8px 6px;
         text-align: center;
         cursor: pointer;
         border-radius: 4px;
@@ -292,7 +313,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 40px;
+        min-height: 32px;
         border: 1px solid rgba(0, 0, 0, 0.1);
       }
 
@@ -382,7 +403,8 @@
       .theme-dark .calendar-month.active,
       .theme-type-dark .calendar-year.active,
       .theme-dark .calendar-year.active {
-        background-color: #4d8eff;
+        background-color: #9ca3af;
+        color: #ffffff;
       }
 
       /* Contrast dark theme */
@@ -398,8 +420,8 @@
       .theme-contrast-dark .calendar-month.active,
       .theme-type-contrast-dark .calendar-year.active,
       .theme-contrast-dark .calendar-year.active {
-        background-color: #ffcc00;
-        color: #000000;
+        background-color: #9ca3af;
+        color: #ffffff;
       }
 
       /* Classic light theme adjustments */
@@ -415,7 +437,8 @@
       .theme-classic-light .calendar-month.active,
       .theme-type-classic-light .calendar-year.active,
       .theme-classic-light .calendar-year.active {
-        background-color: #0066cc;
+        background-color: #d1d5db;
+        color: #000000;
       }
     </style>
   </head>
