@@ -530,8 +530,8 @@ class CustomCalendar {
     const monthShort = monthFull.slice(0, 3);
 
     switch (format) {
-      case "M/D/YYYY":
-        return `${month}/${day}/${year}`;
+      case "MM/DD/YYYY":
+        return `${monthPadded}/${dayPadded}/${year}`;
       case "dddd, MMMM D, YYYY":
         return `${weekday}, ${monthFull} ${day}, ${year}`;
       case "MMMM D, YYYY":
@@ -545,7 +545,7 @@ class CustomCalendar {
       case "M.D.YYYY":
         return `${month}.${day}.${year}`;
       default:
-        return `${month}/${day}/${year}`;
+        return `${monthPadded}/${dayPadded}/${year}`;
     }
   }
 }
@@ -820,7 +820,7 @@ function insertDateValue(formattedDate, selectedDate) {
 function validateAndGetFormat(formatSelect) {
   const format = formatSelect.value;
   const validFormats = [
-    "M/D/YYYY",
+    "MM/DD/YYYY",
     "dddd, MMMM D, YYYY",
     "MMMM D, YYYY",
     "M/D/YY",
@@ -833,8 +833,8 @@ function validateAndGetFormat(formatSelect) {
     return format;
   } else {
     console.warn("Invalid format detected, falling back to default");
-    formatSelect.value = "M/D/YYYY";
-    return "M/D/YYYY";
+    formatSelect.value = "MM/DD/YYYY";
+    return "MM/DD/YYYY";
   }
 }
 
@@ -850,7 +850,7 @@ function initializeDatePicker() {
 
   function updateFormatOptions(selectedDate) {
     const formats = [
-      "M/D/YYYY",
+      "MM/DD/YYYY",
       "dddd, MMMM D, YYYY",
       "MMMM D, YYYY",
       "M/D/YY",
