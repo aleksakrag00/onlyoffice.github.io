@@ -1,4 +1,35 @@
-// Custom Calendar Class
+// Helper function to translate and clean up English keys
+function tr(key) {
+  if (window.Asc && window.Asc.plugin && window.Asc.plugin.tr) {
+    const translated = window.Asc.plugin.tr(key);
+
+    // If translation returns the same as key (meaning English), clean it up
+    if (translated === key) {
+      // Remove context markers for English display
+      return key.replace(/ \(full\)|\(short\)/g, "");
+    }
+
+    return translated;
+  }
+
+  // Fallback: clean up the key for display
+  return key.replace(/ \(full\)|\(short\)/g, "");
+}
+
+// Helper function to get proper weekday abbreviations
+function getWeekdayAbbreviation(fullWeekdayName, index) {
+  // Check if this looks like Albanian format (starts with "E " followed by another word)
+  if (fullWeekdayName.startsWith("E ") && fullWeekdayName.length > 2) {
+    // Extract the first letter of the second word
+    const secondWord = fullWeekdayName.substring(2).trim();
+    return secondWord.charAt(0).toUpperCase();
+  }
+
+  // For other languages, use the first 2 characters as before
+  return fullWeekdayName.substring(0, 2);
+}
+
+// Custom Calendar Class with Translation Support
 class CustomCalendar {
   constructor(input, options = {}) {
     this.input = input;
@@ -19,12 +50,13 @@ class CustomCalendar {
     this.isOpen = false;
     this.currentView = "days";
 
+    // Initialize with English names - will be translated on onTranslate
     this.months = [
       "January",
       "February",
       "March",
       "April",
-      "May",
+      "May (full)",
       "June",
       "July",
       "August",
@@ -34,7 +66,89 @@ class CustomCalendar {
       "December",
     ];
 
+    this.monthsShort = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May (short)",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    this.weekdays_full = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+
     this.init();
+  }
+
+  // Method to update translations when language changes
+  updateLocalization() {
+    if (window.Asc && window.Asc.plugin && window.Asc.plugin.tr) {
+      // Update months array with translations using English keys
+      this.months = [
+        tr("January"),
+        tr("February"),
+        tr("March"),
+        tr("April"),
+        tr("May (full)"), // This will show "May" in English, "Květen" in Czech
+        tr("June"),
+        tr("July"),
+        tr("August"),
+        tr("September"),
+        tr("October"),
+        tr("November"),
+        tr("December"),
+      ];
+
+      this.monthsShort = [
+        tr("Jan"),
+        tr("Feb"),
+        tr("Mar"),
+        tr("Apr"),
+        tr("May (short)"), // This will show "May" in English, "Kvě" in Czech
+        tr("Jun"),
+        tr("Jul"),
+        tr("Aug"),
+        tr("Sep"),
+        tr("Oct"),
+        tr("Nov"),
+        tr("Dec"),
+      ];
+
+      this.weekdays_full = [
+        tr("Sunday"),
+        tr("Monday"),
+        tr("Tuesday"),
+        tr("Wednesday"),
+        tr("Thursday"),
+        tr("Friday"),
+        tr("Saturday"),
+      ];
+
+      // Update month view with translated names
+      const monthElements = document.querySelectorAll(".calendar-month");
+      monthElements.forEach((el, index) => {
+        el.textContent = this.monthsShort[index];
+      });
+
+      // Update the calendar display if it's been rendered
+      if (this.calendarTitle) {
+        this.updateTitle();
+      }
+    }
   }
 
   init() {
@@ -42,19 +156,16 @@ class CustomCalendar {
     this.bindEvents();
     this.updateInput();
     this.setupIcon();
-    // Apply theme to icon immediately on initialization
     this.applyThemeToIcon();
   }
 
   applyThemeToIcon() {
-    // Get the current background color of the plugin
     const body = document.body;
     const mainContent = document.getElementById("mainContent");
     const form = document.getElementById("mainForm");
 
     let backgroundColor = window.getComputedStyle(body).backgroundColor;
 
-    // If body doesn't have a background, try main content or form
     if (
       !backgroundColor ||
       backgroundColor === "rgba(0, 0, 0, 0)" ||
@@ -73,7 +184,6 @@ class CustomCalendar {
       }
     }
 
-    // Parse RGB values to determine if it's light or dark
     let isDark = false;
 
     if (backgroundColor && backgroundColor.includes("rgb")) {
@@ -83,13 +193,11 @@ class CustomCalendar {
         const g = parseInt(rgb[1]);
         const b = parseInt(rgb[2]);
 
-        // Calculate luminance
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
         isDark = luminance < 0.5;
       }
     }
 
-    // Apply theme to calendar icon
     if (isDark) {
       this.calendarIcon.classList.add("dark-theme");
       this.calendarIcon.classList.remove("light-theme");
@@ -174,20 +282,16 @@ class CustomCalendar {
     this.calendar.classList.add("show");
     this.calendarIcon.classList.add("active");
     this.isOpen = true;
-
-    // Detect if it's dark or light theme and apply appropriate calendar styling
     this.applyThemeToCalendar();
   }
 
   applyThemeToCalendar() {
-    // Get the current background color of the plugin
     const body = document.body;
     const mainContent = document.getElementById("mainContent");
     const form = document.getElementById("mainForm");
 
     let backgroundColor = window.getComputedStyle(body).backgroundColor;
 
-    // If body doesn't have a background, try main content or form
     if (
       !backgroundColor ||
       backgroundColor === "rgba(0, 0, 0, 0)" ||
@@ -208,11 +312,10 @@ class CustomCalendar {
 
     console.log("Plugin background color:", backgroundColor);
 
-    // Parse RGB values to determine if it's light or dark
     let isDark = false;
     let r = 255,
       g = 255,
-      b = 255; // Default to white
+      b = 255;
 
     if (backgroundColor && backgroundColor.includes("rgb")) {
       const rgb = backgroundColor.match(/\d+/g);
@@ -221,7 +324,6 @@ class CustomCalendar {
         g = parseInt(rgb[1]);
         b = parseInt(rgb[2]);
 
-        // Calculate luminance
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
         isDark = luminance < 0.5;
 
@@ -234,7 +336,6 @@ class CustomCalendar {
     let calendarBgColor, calendarTextColor;
 
     if (isDark) {
-      // Dark theme - make calendar background darker than plugin background
       const darkerR = Math.max(0, r - 15);
       const darkerG = Math.max(0, g - 15);
       const darkerB = Math.max(0, b - 15);
@@ -242,7 +343,6 @@ class CustomCalendar {
       calendarTextColor = "#ffffff";
       console.log("Applied darker background:", calendarBgColor);
     } else {
-      // Light theme - make calendar background lighter than plugin background
       const lighterR = Math.min(255, r + 15);
       const lighterG = Math.min(255, g + 15);
       const lighterB = Math.min(255, b + 15);
@@ -251,7 +351,6 @@ class CustomCalendar {
       console.log("Applied lighter background:", calendarBgColor);
     }
 
-    // Apply the calculated colors with !important
     this.calendar.style.setProperty(
       "background-color",
       calendarBgColor,
@@ -259,7 +358,6 @@ class CustomCalendar {
     );
     this.calendar.style.setProperty("color", calendarTextColor, "important");
 
-    // Apply theme to calendar icon (add theme class for PNG background image)
     if (isDark) {
       this.calendarIcon.classList.add("dark-theme");
       this.calendarIcon.classList.remove("light-theme");
@@ -272,10 +370,8 @@ class CustomCalendar {
       console.log("Icon classes:", this.calendarIcon.className);
     }
 
-    // Apply text color to all child elements (except red weekend days)
     const allElements = this.calendar.querySelectorAll("*");
     allElements.forEach((element) => {
-      // Skip weekend days (they should stay red)
       if (
         !element.matches(".calendar-day:nth-child(7n+1)") &&
         !element.matches(".calendar-day:nth-child(7n)")
@@ -284,7 +380,6 @@ class CustomCalendar {
       }
     });
 
-    // Force grey backgrounds for selected elements
     const selectedElements = this.calendar.querySelectorAll(
       ".calendar-day.selected, .calendar-month.active, .calendar-year.active"
     );
@@ -440,14 +535,12 @@ class CustomCalendar {
     this.hide();
     this.input.dispatchEvent(new Event("datechange"));
 
-    // Apply grey styling to the newly selected date
     setTimeout(() => {
       this.applyGreyToSelected();
     }, 10);
   }
 
   applyGreyToSelected() {
-    // Determine if dark theme based on current calendar background
     const calendarBg = window.getComputedStyle(this.calendar).backgroundColor;
     const isDark = this.isBackgroundDark(calendarBg);
 
@@ -512,19 +605,9 @@ class CustomCalendar {
     const year = date.getFullYear();
     const yearShort = String(year).slice(-2);
 
-    const weekdays = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-    const weekday = weekdays[date.getDay()];
-
+    const weekday = this.weekdays_full[date.getDay()];
     const monthFull = this.months[month - 1];
-    const monthShort = monthFull.slice(0, 3);
+    const monthShort = this.monthsShort[month - 1];
 
     switch (format) {
       case "MM/DD/YYYY":
@@ -546,6 +629,9 @@ class CustomCalendar {
     }
   }
 }
+
+// Global calendar instance
+let globalCalendar = null;
 
 // Background image detection utility
 function testBackgroundImage(element, url) {
@@ -570,7 +656,7 @@ window.Asc.scope = window.Asc.scope || {};
 
 window.Asc.plugin.init = function () {
   if (this.executeMethod) window.pluginAPI = this;
-  showLoadingScreen("Initializing plugin...");
+  showLoadingScreen(tr("Initializing plugin..."));
   setTimeout(() => {
     detectAndApplyTheme();
     initializeDatePicker();
@@ -578,15 +664,91 @@ window.Asc.plugin.init = function () {
   }, 500);
 };
 
+// Update the onTranslate function with Albanian support:
+window.Asc.plugin.onTranslate = function () {
+  console.log("Translation callback triggered");
+
+  // Update instruction text
+  const instructionText = document.getElementById("instructionText");
+  if (instructionText) {
+    instructionText.innerHTML = tr(
+      "Select the <strong>date and format</strong>, then click the <strong>Insert date</strong> button. The date will be displayed in the selected cell."
+    );
+  }
+
+  // Update labels
+  const selectDateLabel = document.getElementById("selectDateLabel");
+  if (selectDateLabel) {
+    selectDateLabel.innerHTML = tr("Select date");
+  }
+
+  const selectDateFormatLabel = document.getElementById(
+    "selectDateFormatLabel"
+  );
+  if (selectDateFormatLabel) {
+    selectDateFormatLabel.innerHTML = tr("Select date format");
+  }
+
+  // Update button text
+  const insertDateBtn = document.getElementById("insertDate");
+  if (insertDateBtn) {
+    insertDateBtn.innerHTML = tr("Insert date");
+  }
+
+  // Update loading texts
+  const pleaseDoNotClose = document.getElementById("pleaseDoNotClose");
+  if (pleaseDoNotClose) {
+    pleaseDoNotClose.innerHTML = tr(
+      "Please <strong>do not close</strong> the plugin panel."
+    );
+  }
+
+  const loadingText = document.getElementById("loadingText");
+  if (loadingText) {
+    loadingText.innerHTML = tr("Loading...");
+  }
+
+  // Update input placeholder
+  const dateInput = document.getElementById("dateInput");
+  if (dateInput) {
+    dateInput.placeholder = tr("Select a date");
+  }
+
+  // Update weekday abbreviations in calendar - IMPROVED VERSION with Albanian support
+  const weekdayElements = document.querySelectorAll("[data-day]");
+  const weekdayKeys = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  weekdayElements.forEach((el, index) => {
+    if (weekdayKeys[index]) {
+      const translated = tr(weekdayKeys[index]);
+      // Use the new helper function for proper abbreviation
+      const abbreviation = getWeekdayAbbreviation(translated, index);
+      el.textContent = abbreviation;
+    }
+  });
+
+  // Update calendar instance if it exists
+  if (globalCalendar) {
+    globalCalendar.updateLocalization();
+    globalCalendar.render();
+  }
+};
+
 function detectAndApplyTheme() {
-  // Get the current background color of the body or main content
   const body = document.body;
   const mainContent = document.getElementById("mainContent");
   const form = document.getElementById("mainForm");
 
   let backgroundColor = window.getComputedStyle(body).backgroundColor;
 
-  // If body doesn't have a background, try main content or form
   if (
     !backgroundColor ||
     backgroundColor === "rgba(0, 0, 0, 0)" ||
@@ -607,7 +769,6 @@ function detectAndApplyTheme() {
 
   console.log("Detected background color:", backgroundColor);
 
-  // Parse RGB values to determine if it's light or dark
   let isDark = false;
 
   if (backgroundColor && backgroundColor.includes("rgb")) {
@@ -617,7 +778,6 @@ function detectAndApplyTheme() {
       const g = parseInt(rgb[1]);
       const b = parseInt(rgb[2]);
 
-      // Calculate luminance
       const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
       isDark = luminance < 0.5;
 
@@ -627,7 +787,6 @@ function detectAndApplyTheme() {
     }
   }
 
-  // Apply brown background for testing
   const calendar = document.getElementById("customCalendar");
   if (calendar) {
     calendar.style.backgroundColor = "#8B4513";
@@ -640,7 +799,7 @@ function showLoadingScreen(message = "Loading...") {
   const loadingOverlay = document.getElementById("loadingOverlay");
   const loadingText = document.getElementById("loadingText");
   if (loadingOverlay && loadingText) {
-    loadingText.textContent = message;
+    loadingText.textContent = tr(message);
     loadingOverlay.style.display = "flex";
     document.getElementById("mainContent").classList.add("loading");
   }
@@ -654,7 +813,6 @@ function hideLoadingScreen() {
   }
 }
 
-// Alternative insertion method for problematic formats
 function insertDateValueAlternative(formattedDate, selectedDate) {
   if (!window.pluginAPI) {
     console.error("Plugin API not available");
@@ -664,8 +822,7 @@ function insertDateValueAlternative(formattedDate, selectedDate) {
   console.log("Using alternative insertion for:", formattedDate);
 
   try {
-    // Use JSON.stringify to properly escape the string
-    const safeDate = JSON.stringify("'" + formattedDate); // Prefix with apostrophe for text format
+    const safeDate = JSON.stringify("'" + formattedDate);
 
     const functionCode = `
       function() {
@@ -676,16 +833,13 @@ function insertDateValueAlternative(formattedDate, selectedDate) {
           var dateValue = ${safeDate};
           console.log("Inserting safe date as text:", dateValue);
           
-          // Get selection and force override
           var oSelection = oWorksheet.GetSelection();
           if (oSelection) {
-            // Clear first, then set as text
             oSelection.Clear();
             oSelection.SetValue(dateValue);
             return true;
           }
           
-          // Fallback to active cell
           var oActiveCell = oWorksheet.GetActiveCell();
           if (oActiveCell) {
             oActiveCell.Clear();
@@ -710,7 +864,6 @@ function insertDateValueAlternative(formattedDate, selectedDate) {
   }
 }
 
-// Enhanced date insertion function with text formatting to prevent auto-conversion
 function insertDateValue(formattedDate, selectedDate) {
   if (!window.pluginAPI) {
     console.error("Plugin API not available");
@@ -719,14 +872,12 @@ function insertDateValue(formattedDate, selectedDate) {
 
   console.log("Attempting to insert date:", formattedDate);
 
-  // Escape the formatted date to prevent issues with special characters
   const escapedDate = formattedDate
     .replace(/\\/g, "\\\\")
     .replace(/"/g, '\\"')
     .replace(/'/g, "\\'");
 
   try {
-    // Enhanced function that forces text insertion to prevent auto-formatting
     const functionCode = `
       function() {
         try {
@@ -736,31 +887,25 @@ function insertDateValue(formattedDate, selectedDate) {
             return false;
           }
           
-          // Get the current selection
           var oSelection = oWorksheet.GetSelection();
           if (!oSelection) {
             console.log("No selection found, trying active cell");
             var oActiveCell = oWorksheet.GetActiveCell();
             if (oActiveCell) {
-              // Force as text by prefixing with apostrophe
               oActiveCell.SetValue("'${escapedDate}");
               return true;
             }
             return false;
           }
           
-          // Force clear and set the value as TEXT
           try {
-            // Method 1: Direct SetValue with text prefix
             oSelection.Clear();
-            // Prefix with apostrophe to force text format and prevent auto-conversion
             oSelection.SetValue("'${escapedDate}");
             console.log("Successfully set value as text using direct method");
             return true;
           } catch (directError) {
             console.log("Direct method failed, trying cell-by-cell approach");
             
-            // Method 2: Cell-by-cell for ranges
             try {
               var oRange = oSelection;
               if (oRange.GetRowsCount && oRange.GetColsCount) {
@@ -772,21 +917,18 @@ function insertDateValue(formattedDate, selectedDate) {
                   for (var col = 0; col < colCount; col++) {
                     var oCell = oRange.GetRows(row).GetCells(col);
                     if (oCell) {
-                      // Force as text
                       oCell.SetValue("'${escapedDate}");
                     }
                   }
                 }
                 return true;
               } else {
-                // Single cell - force as text
                 oSelection.SetValue("'${escapedDate}");
                 return true;
               }
             } catch (cellError) {
               console.log("Cell-by-cell method failed:", cellError);
               
-              // Method 3: Fallback using active cell
               var oActiveCell = oWorksheet.GetActiveCell();
               if (oActiveCell) {
                 oActiveCell.SetValue("'${escapedDate}");
@@ -802,7 +944,6 @@ function insertDateValue(formattedDate, selectedDate) {
       }
     `;
 
-    // Convert string to function and execute
     const embeddedFunction = eval(`(${functionCode})`);
     window.pluginAPI.callCommand(embeddedFunction);
     console.log("Date insertion command sent");
@@ -813,7 +954,6 @@ function insertDateValue(formattedDate, selectedDate) {
   }
 }
 
-// Format validation utility
 function validateAndGetFormat(formatSelect) {
   const format = formatSelect.value;
   const validFormats = [
@@ -845,6 +985,9 @@ function initializeDatePicker() {
   input.setAttribute("data-initialized", "true");
   const calendar = new CustomCalendar(input);
 
+  // Store global reference for translation updates
+  globalCalendar = calendar;
+
   function updateFormatOptions(selectedDate) {
     const formats = [
       "MM/DD/YYYY",
@@ -868,7 +1011,6 @@ function initializeDatePicker() {
 
   updateFormatOptions(new Date());
 
-  // Add debouncing to the format change listener to prevent rapid changes
   let formatChangeTimeout;
   formatSelect.addEventListener("change", () => {
     clearTimeout(formatChangeTimeout);
@@ -881,7 +1023,6 @@ function initializeDatePicker() {
     updateFormatOptions(calendar.getDate())
   );
 
-  // FIXED INSERT BUTTON EVENT LISTENER
   insertBtn.addEventListener("click", () => {
     const selectedDate = calendar.getDate();
     if (!selectedDate) {
@@ -889,32 +1030,26 @@ function initializeDatePicker() {
       return;
     }
 
-    // Disable controls to prevent changes during insertion
     insertBtn.disabled = true;
     formatSelect.disabled = true;
 
-    // CAPTURE the format value IMMEDIATELY before any async operations
     const currentFormat = validateAndGetFormat(formatSelect);
     console.log("Using format:", currentFormat);
     console.log("Selected date:", selectedDate);
 
-    // Apply loading state IMMEDIATELY before any async operations
     const mainContent = document.getElementById("mainContent");
     if (mainContent) {
       mainContent.classList.add("loading");
     }
-    showLoadingScreen("Inserting date...");
 
-    // Use the captured format value and log it
+    showLoadingScreen(tr("Inserting date..."));
+
     const formattedDate = calendar.formatDate(selectedDate, currentFormat);
     console.log("Formatted date result:", formattedDate);
 
-    // Use setTimeout to ensure UI updates immediately
     setTimeout(() => {
-      // Try primary insertion method first
       let success = insertDateValue(formattedDate, selectedDate);
 
-      // If primary method fails, try alternative method for problematic formats
       if (
         !success &&
         (currentFormat.includes("MMMM") ||
@@ -928,22 +1063,15 @@ function initializeDatePicker() {
       setTimeout(() => {
         if (success) {
           console.log("Date inserted successfully:", formattedDate);
-          // Reset both the calendar and format dropdown
           const todaysDate = new Date();
 
-          // Reset format dropdown to first option FIRST
           formatSelect.selectedIndex = 0;
-
-          // Update format options to show today's date in all formats
           updateFormatOptions(todaysDate);
-
-          // Set calendar date AFTER format is reset (this will trigger updateInput)
           calendar.setDate(todaysDate);
         } else {
           console.error("Failed to insert date:", formattedDate);
         }
 
-        // Re-enable controls
         insertBtn.disabled = false;
         formatSelect.disabled = false;
 
@@ -951,14 +1079,19 @@ function initializeDatePicker() {
         if (mainContent) {
           mainContent.classList.remove("loading");
         }
-      }, 800); // Increased timeout to ensure insertion completes fully
-    }, 10); // Very short delay to ensure UI updates
+      }, 800);
+    }, 10);
   });
+
+  // Initial translation update if translations are already available
+  if (window.Asc.plugin.tr) {
+    window.Asc.plugin.onTranslate();
+  }
 }
 
 // Fallback initialization
 document.addEventListener("DOMContentLoaded", function () {
-  showLoadingScreen("Loading date picker...");
+  showLoadingScreen(tr("Loading plugin..."));
   setTimeout(() => {
     if (
       !document.querySelector("#dateInput").hasAttribute("data-initialized")

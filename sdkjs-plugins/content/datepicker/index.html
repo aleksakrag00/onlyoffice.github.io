@@ -443,7 +443,10 @@
   <body>
     <div class="main-content" id="mainContent">
       <div class="loading-overlay" id="loadingOverlay">
-        <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px">
+        <div
+          id="pleaseDoNotClose"
+          style="font-size: 12px; font-weight: bold; margin-bottom: 8px"
+        >
           Please <strong>do not close</strong> the plugin panel.
         </div>
         <div class="loading-content">
@@ -453,14 +456,14 @@
       </div>
 
       <div class="form" id="mainForm">
-        <div class="instruction-text">
+        <div class="instruction-text" id="instructionText">
           Select the <strong>date and format</strong>, then click the
           <strong>Insert date</strong> button. The date will be displayed in the
           selected cell.
         </div>
 
         <div class="form-group">
-          <label for="dateInput">Select date</label>
+          <label for="dateInput" id="selectDateLabel">Select date</label>
           <div class="datepicker-wrapper">
             <input
               type="text"
@@ -485,13 +488,13 @@
               </div>
               <div class="calendar-grid">
                 <div class="calendar-weekdays" id="calendarWeekdays">
-                  <div class="calendar-weekday">Su</div>
-                  <div class="calendar-weekday">Mo</div>
-                  <div class="calendar-weekday">Tu</div>
-                  <div class="calendar-weekday">We</div>
-                  <div class="calendar-weekday">Th</div>
-                  <div class="calendar-weekday">Fr</div>
-                  <div class="calendar-weekday">Sa</div>
+                  <div class="calendar-weekday" data-day="0">Su</div>
+                  <div class="calendar-weekday" data-day="1">Mo</div>
+                  <div class="calendar-weekday" data-day="2">Tu</div>
+                  <div class="calendar-weekday" data-day="3">We</div>
+                  <div class="calendar-weekday" data-day="4">Th</div>
+                  <div class="calendar-weekday" data-day="5">Fr</div>
+                  <div class="calendar-weekday" data-day="6">Sa</div>
                 </div>
                 <div class="calendar-days" id="calendarDays"></div>
                 <div
@@ -523,7 +526,9 @@
         </div>
 
         <div class="form-group">
-          <label for="dateFormat">Select date format</label>
+          <label for="dateFormat" id="selectDateFormatLabel"
+            >Select date format</label
+          >
           <select id="dateFormat" class="form-control form-control-second">
             <option value="MM/DD/YYYY">05/06/2025</option>
             <option value="dddd, MMMM D, YYYY">Monday, May 26, 2025</option>
