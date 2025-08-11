@@ -118,3 +118,23 @@ Message: Main._lateInitialization: 0.0849609375 ms
 Source: devtools://devtools/entrypoints/main/main.js
 Line: 1
 -----------------------
+Level: Debug
+Message: Main._createAppUI: 10.093994140625 ms
+Source: devtools://devtools/entrypoints/main/main.js
+Line: 1
+-----------------------
+Level: Debug
+Message: Main._showAppUI: 44.05517578125 ms
+Source: devtools://devtools/entrypoints/main/main.js
+Line: 1
+-----------------------
+Level: Debug
+Message: Main._initializeTarget: 3.4130859375 ms
+Source: devtools://devtools/entrypoints/main/main.js
+Line: 1
+-----------------------
+Level: Debug
+Message: Main._lateInitialization: 0.0830078125 ms
+Source: devtools://devtools/entrypoints/main/main.js
+Line: 1
+-----------------------
