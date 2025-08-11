@@ -210,10 +210,11 @@ class CustomCalendar {
   }
 
   async setupIcon() {
-    await testBackgroundImage(
-      this.calendarIcon,
-      "./resources/button/calendar.png"
-    );
+    // Get the path relative to the current document
+    const currentPath = window.location.pathname;
+    const basePath = currentPath.substring(0, currentPath.lastIndexOf("/") + 1);
+    const imagePath = basePath + "resources/button/calendar.png";
+    await testBackgroundImage(this.calendarIcon, imagePath);
   }
 
   bindEvents() {
