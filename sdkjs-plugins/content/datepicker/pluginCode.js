@@ -210,7 +210,10 @@ class CustomCalendar {
   }
 
   async setupIcon() {
-    await testBackgroundImage(this.calendarIcon, "resources/img/calendar.png");
+    await testBackgroundImage(
+      this.calendarIcon,
+      "resources/button/calendar.png"
+    );
   }
 
   bindEvents() {
