@@ -103,7 +103,7 @@ class CustomCalendar {
         tr("February"),
         tr("March"),
         tr("April"),
-        tr("May (full)"), // This will show "May" in English, "Květen" in Czech
+        tr("May (full)"),
         tr("June"),
         tr("July"),
         tr("August"),
@@ -118,7 +118,7 @@ class CustomCalendar {
         tr("Feb"),
         tr("Mar"),
         tr("Apr"),
-        tr("May (short)"), // This will show "May" in English, "Kvě" in Czech
+        tr("May (short)"),
         tr("Jun"),
         tr("Jul"),
         tr("Aug"),
@@ -201,11 +201,9 @@ class CustomCalendar {
     if (isDark) {
       this.calendarIcon.classList.add("dark-theme");
       this.calendarIcon.classList.remove("light-theme");
-      console.log("Applied dark theme to icon on init");
     } else {
       this.calendarIcon.classList.add("light-theme");
       this.calendarIcon.classList.remove("dark-theme");
-      console.log("Applied light theme to icon on init");
     }
   }
 
@@ -314,8 +312,6 @@ class CustomCalendar {
       }
     }
 
-    console.log("Plugin background color:", backgroundColor);
-
     let isDark = false;
     let r = 255,
       g = 255,
@@ -330,10 +326,6 @@ class CustomCalendar {
 
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
         isDark = luminance < 0.5;
-
-        console.log("Plugin RGB values:", r, g, b);
-        console.log("Luminance:", luminance);
-        console.log("Is dark theme:", isDark);
       }
     }
 
@@ -345,14 +337,12 @@ class CustomCalendar {
       const darkerB = Math.max(0, b - 15);
       calendarBgColor = `rgb(${darkerR}, ${darkerG}, ${darkerB})`;
       calendarTextColor = "#ffffff";
-      console.log("Applied darker background:", calendarBgColor);
     } else {
       const lighterR = Math.min(255, r + 15);
       const lighterG = Math.min(255, g + 15);
       const lighterB = Math.min(255, b + 15);
       calendarBgColor = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
       calendarTextColor = "#000000";
-      console.log("Applied lighter background:", calendarBgColor);
     }
 
     this.calendar.style.setProperty(
@@ -365,13 +355,9 @@ class CustomCalendar {
     if (isDark) {
       this.calendarIcon.classList.add("dark-theme");
       this.calendarIcon.classList.remove("light-theme");
-      console.log("Added dark-theme class to icon");
-      console.log("Icon classes:", this.calendarIcon.className);
     } else {
       this.calendarIcon.classList.add("light-theme");
       this.calendarIcon.classList.remove("dark-theme");
-      console.log("Added light-theme class to icon");
-      console.log("Icon classes:", this.calendarIcon.className);
     }
 
     const allElements = this.calendar.querySelectorAll("*");
@@ -396,8 +382,6 @@ class CustomCalendar {
         element.style.setProperty("color", "#000000", "important");
       }
     });
-
-    console.log("Applied theme to calendar and children");
   }
 
   hide() {
@@ -662,16 +646,12 @@ window.Asc.plugin.init = function () {
   if (this.executeMethod) window.pluginAPI = this;
   showLoadingScreen(tr("Initializing plugin..."));
   setTimeout(() => {
-    detectAndApplyTheme();
     initializeDatePicker();
     hideLoadingScreen();
   }, 500);
 };
 
-// Update the onTranslate function with Albanian support:
 window.Asc.plugin.onTranslate = function () {
-  console.log("Translation callback triggered");
-
   // Update instruction text
   const instructionText = document.getElementById("instructionText");
   if (instructionText) {
@@ -718,7 +698,7 @@ window.Asc.plugin.onTranslate = function () {
     dateInput.placeholder = tr("Select a date");
   }
 
-  // Update weekday abbreviations in calendar - IMPROVED VERSION with Albanian support
+  // Update weekday abbreviations in calendar
   const weekdayElements = document.querySelectorAll("[data-day]");
   const weekdayKeys = [
     "Sunday",
@@ -733,7 +713,6 @@ window.Asc.plugin.onTranslate = function () {
   weekdayElements.forEach((el, index) => {
     if (weekdayKeys[index]) {
       const translated = tr(weekdayKeys[index]);
-      // Use the new helper function for proper abbreviation
       const abbreviation = getWeekdayAbbreviation(translated, index);
       el.textContent = abbreviation;
     }
@@ -745,59 +724,6 @@ window.Asc.plugin.onTranslate = function () {
     globalCalendar.render();
   }
 };
-
-function detectAndApplyTheme() {
-  const body = document.body;
-  const mainContent = document.getElementById("mainContent");
-  const form = document.getElementById("mainForm");
-
-  let backgroundColor = window.getComputedStyle(body).backgroundColor;
-
-  if (
-    !backgroundColor ||
-    backgroundColor === "rgba(0, 0, 0, 0)" ||
-    backgroundColor === "transparent"
-  ) {
-    if (mainContent) {
-      backgroundColor = window.getComputedStyle(mainContent).backgroundColor;
-    }
-    if (
-      (!backgroundColor ||
-        backgroundColor === "rgba(0, 0, 0, 0)" ||
-        backgroundColor === "transparent") &&
-      form
-    ) {
-      backgroundColor = window.getComputedStyle(form).backgroundColor;
-    }
-  }
-
-  console.log("Detected background color:", backgroundColor);
-
-  let isDark = false;
-
-  if (backgroundColor && backgroundColor.includes("rgb")) {
-    const rgb = backgroundColor.match(/\d+/g);
-    if (rgb && rgb.length >= 3) {
-      const r = parseInt(rgb[0]);
-      const g = parseInt(rgb[1]);
-      const b = parseInt(rgb[2]);
-
-      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-      isDark = luminance < 0.5;
-
-      console.log("RGB values:", r, g, b);
-      console.log("Luminance:", luminance);
-      console.log("Is dark theme:", isDark);
-    }
-  }
-
-  const calendar = document.getElementById("customCalendar");
-  if (calendar) {
-    calendar.style.backgroundColor = "#8B4513";
-    calendar.style.color = "#ffffff";
-    console.log("Applied brown background to calendar");
-  }
-}
 
 function showLoadingScreen(message = "Loading...") {
   const loadingOverlay = document.getElementById("loadingOverlay");
@@ -817,64 +743,11 @@ function hideLoadingScreen() {
   }
 }
 
-function insertDateValueAlternative(formattedDate, selectedDate) {
-  if (!window.pluginAPI) {
-    console.error("Plugin API not available");
-    return false;
-  }
-
-  console.log("Using alternative insertion for:", formattedDate);
-
-  try {
-    const safeDate = JSON.stringify("'" + formattedDate);
-
-    const functionCode = `
-      function() {
-        try {
-          var oWorksheet = Api.GetActiveSheet();
-          if (!oWorksheet) return false;
-          
-          var dateValue = ${safeDate};
-          console.log("Inserting safe date as text:", dateValue);
-          
-          var oSelection = oWorksheet.GetSelection();
-          if (oSelection) {
-            oSelection.Clear();
-            oSelection.SetValue(dateValue);
-            return true;
-          }
-          
-          var oActiveCell = oWorksheet.GetActiveCell();
-          if (oActiveCell) {
-            oActiveCell.Clear();
-            oActiveCell.SetValue(dateValue);
-            return true;
-          }
-          
-          return false;
-        } catch (e) {
-          console.log("Alternative insert error:", e);
-          return false;
-        }
-      }
-    `;
-
-    const embeddedFunction = eval(`(${functionCode})`);
-    window.pluginAPI.callCommand(embeddedFunction);
-    return true;
-  } catch (e) {
-    console.log("Alternative insert wrapper error:", e);
-    return false;
-  }
-}
-
 function insertDateValue(formattedDate, selectedDate) {
   if (!window.pluginAPI) {
     console.error("Plugin API not available");
     return false;
   }
-
-  console.log("Attempting to insert date:", formattedDate);
 
   const escapedDate = formattedDate
     .replace(/\\/g, "\\\\")
@@ -887,13 +760,11 @@ function insertDateValue(formattedDate, selectedDate) {
         try {
           var oWorksheet = Api.GetActiveSheet();
           if (!oWorksheet) {
-            console.log("No active worksheet");
             return false;
           }
           
           var oSelection = oWorksheet.GetSelection();
           if (!oSelection) {
-            console.log("No selection found, trying active cell");
             var oActiveCell = oWorksheet.GetActiveCell();
             if (oActiveCell) {
               oActiveCell.SetValue("'${escapedDate}");
@@ -905,17 +776,13 @@ function insertDateValue(formattedDate, selectedDate) {
           try {
             oSelection.Clear();
             oSelection.SetValue("'${escapedDate}");
-            console.log("Successfully set value as text using direct method");
             return true;
           } catch (directError) {
-            console.log("Direct method failed, trying cell-by-cell approach");
-            
             try {
               var oRange = oSelection;
               if (oRange.GetRowsCount && oRange.GetColsCount) {
                 var rowCount = oRange.GetRowsCount();
                 var colCount = oRange.GetColsCount();
-                console.log("Range size:", rowCount, "x", colCount);
                 
                 for (var row = 0; row < rowCount; row++) {
                   for (var col = 0; col < colCount; col++) {
@@ -931,8 +798,6 @@ function insertDateValue(formattedDate, selectedDate) {
                 return true;
               }
             } catch (cellError) {
-              console.log("Cell-by-cell method failed:", cellError);
-              
               var oActiveCell = oWorksheet.GetActiveCell();
               if (oActiveCell) {
                 oActiveCell.SetValue("'${escapedDate}");
@@ -942,7 +807,6 @@ function insertDateValue(formattedDate, selectedDate) {
             }
           }
         } catch (e) {
-          console.log("Insert error:", e.message || e);
           return false;
         }
       }
@@ -950,10 +814,8 @@ function insertDateValue(formattedDate, selectedDate) {
 
     const embeddedFunction = eval(`(${functionCode})`);
     window.pluginAPI.callCommand(embeddedFunction);
-    console.log("Date insertion command sent");
     return true;
   } catch (e) {
-    console.log("Insert wrapper error:", e);
     return false;
   }
 }
@@ -1030,7 +892,6 @@ function initializeDatePicker() {
   insertBtn.addEventListener("click", () => {
     const selectedDate = calendar.getDate();
     if (!selectedDate) {
-      console.log("No date selected");
       return;
     }
 
@@ -1038,9 +899,6 @@ function initializeDatePicker() {
     formatSelect.disabled = true;
 
     const currentFormat = validateAndGetFormat(formatSelect);
-    console.log("Using format:", currentFormat);
-    console.log("Selected date:", selectedDate);
-
     const mainContent = document.getElementById("mainContent");
     if (mainContent) {
       mainContent.classList.add("loading");
@@ -1049,31 +907,16 @@ function initializeDatePicker() {
     showLoadingScreen(tr("Inserting date..."));
 
     const formattedDate = calendar.formatDate(selectedDate, currentFormat);
-    console.log("Formatted date result:", formattedDate);
 
     setTimeout(() => {
-      let success = insertDateValue(formattedDate, selectedDate);
-
-      if (
-        !success &&
-        (currentFormat.includes("MMMM") ||
-          currentFormat.includes("YYYY-MM-DD") ||
-          currentFormat.includes("dddd"))
-      ) {
-        console.log("Primary insertion failed, trying alternative method");
-        success = insertDateValueAlternative(formattedDate, selectedDate);
-      }
+      const success = insertDateValue(formattedDate, selectedDate);
 
       setTimeout(() => {
         if (success) {
-          console.log("Date inserted successfully:", formattedDate);
           const todaysDate = new Date();
-
           formatSelect.selectedIndex = 0;
           updateFormatOptions(todaysDate);
           calendar.setDate(todaysDate);
-        } else {
-          console.error("Failed to insert date:", formattedDate);
         }
 
         insertBtn.disabled = false;
