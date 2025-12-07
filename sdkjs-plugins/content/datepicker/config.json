@@ -32,9 +32,7 @@
     "zh": "用于在单元格中插入格式化日期的插件。"
   },
   "type": "panel",
-
-  "icons": ["resources/light/icon.png", "resources/dark/icon-dark.png"],
-
+  "icons": ["resources/light/icon.png", "resources/light/icon@2x.png"],
   "variations": [
     {
       "description": "Insert formatted dates into spreadsheet cells with a calendar interface.",
@@ -53,24 +51,42 @@
         "zh": "使用日历界面将格式化日期插入电子表格单元格。"
       },
       "url": "index.html",
-      "icons": ["resources/light/icon.png", "resources/dark/icon-dark.png"],
+      "icons": ["resources/light/icon.png", "resources/light/icon@2x.png"],
       "icons2": [
         {
           "style": "light",
           "100%": {
-            "normal": "resources/light/icon.png"
+            "normal": "resources/light/icon.svg"
+          },
+          "125%": {
+            "normal": "resources/light/icon@1.25x.svg"
+          },
+          "150%": {
+            "normal": "resources/light/icon@1.5x.svg"
+          },
+          "175%": {
+            "normal": "resources/light/icon@1.75x.svg"
           },
           "200%": {
-            "normal": "resources/light/icon.png"
+            "normal": "resources/light/icon@2x.svg"
           }
         },
         {
           "style": "dark",
           "100%": {
-            "normal": "resources/dark/icon-dark.png"
+            "normal": "resources/dark/icon-dark.svg"
+          },
+          "125%": {
+            "normal": "resources/dark/icon-dark@1.25x.svg"
+          },
+          "150%": {
+            "normal": "resources/dark/icon-dark@1.5x.svg"
+          },
+          "175%": {
+            "normal": "resources/dark/icon-dark@1.75x.svg"
           },
           "200%": {
-            "normal": "resources/dark/icon-dark.png"
+            "normal": "resources/dark/icon-dark@2x.svg"
           }
         }
       ],
